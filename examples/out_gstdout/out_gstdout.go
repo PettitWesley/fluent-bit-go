@@ -24,6 +24,56 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	return output.FLB_OK
 }
 
+func decodeSlice(record []interface{}) ([]interface{}, error) {
+	for i, v := range record {
+		switch t := v.(type) {
+		case []byte:
+			// convert all byte slices to strings
+			record[i] = string(t)
+		case map[interface{}]interface{}:
+			decoded, err := DecodeMap(t)
+			if err != nil {
+				return nil, err
+			}
+			record[i] = decoded
+		case []interface{}:
+			decoded, err := decodeSlice(t)
+			if err != nil {
+				return nil, err
+			}
+			record[i] = decoded
+		}
+	}
+	return record, nil
+}
+
+func DecodeMap(record map[interface{}]interface{}) (map[interface{}]interface{}, error) {
+	for k, v := range record {
+		switch t := v.(type) {
+		case output.FLBTime:
+			timestamp := t.Time
+			fmt.Println("Found time in string")
+			record[k] = timestamp.String()
+		case []byte:
+			// convert all byte slices to strings
+			record[k] = string(t)
+		case map[interface{}]interface{}:
+			decoded, err := DecodeMap(t)
+			if err != nil {
+				return nil, err
+			}
+			record[k] = decoded
+		case []interface{}:
+			decoded, err := decodeSlice(t)
+			if err != nil {
+				return nil, err
+			}
+			record[k] = decoded
+		}
+	}
+	return record, nil
+}
+
 //export FLBPluginFlush
 func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 	var count int
