@@ -93,6 +93,7 @@ func FLBPluginFlush(data unsafe.Pointer, length C.int, tag *C.char) int {
 			break
 		}
 
+		record, _ = DecodeMap(record)
 		var timestamp time.Time
 		switch t := ts.(type) {
 		case output.FLBTime:
