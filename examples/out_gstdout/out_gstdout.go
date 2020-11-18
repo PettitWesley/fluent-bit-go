@@ -48,8 +48,19 @@ func decodeSlice(record []interface{}) ([]interface{}, error) {
 }
 
 func DecodeMap(record map[interface{}]interface{}) (map[interface{}]interface{}, error) {
+
 	for k, v := range record {
+		if key, ok := k.(string); ok {
+			if key == "time" {
+				fmt.Println("Found time key")
+			}
+		}
 		switch t := v.(type) {
+		case time.Time:
+			fmt.Println("Found time.Time in string")
+			record[k] = t.String()
+		case *time.Time:
+			fmt.Println("Found *time.Time in string")
 		case output.FLBTime:
 			timestamp := t.Time
 			fmt.Println("Found time in string")
