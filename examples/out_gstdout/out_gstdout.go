@@ -3,6 +3,7 @@ package main
 import (
 	"C"
 	"fmt"
+	"reflect"
 	"time"
 	"unsafe"
 
@@ -50,24 +51,39 @@ func decodeSlice(record []interface{}) ([]interface{}, error) {
 func DecodeMap(record map[interface{}]interface{}) (map[interface{}]interface{}, error) {
 
 	for k, v := range record {
+		found := false
 		if key, ok := k.(string); ok {
 			if key == "time" {
 				fmt.Println("Found time key")
+				found = true
+				fmt.Println(reflect.TypeOf(v).String())
 			}
 		}
 		switch t := v.(type) {
 		case time.Time:
 			fmt.Println("Found time.Time in string")
 			record[k] = t.String()
+			if found {
+				fmt.Println("its a time.Time")
+			}
 		case *time.Time:
 			fmt.Println("Found *time.Time in string")
+			if found {
+				fmt.Println("its a *time.Time")
+			}
 		case output.FLBTime:
 			timestamp := t.Time
 			fmt.Println("Found time in string")
 			record[k] = timestamp.String()
+			if found {
+				fmt.Println("its a FLBTime")
+			}
 		case []byte:
 			// convert all byte slices to strings
 			record[k] = string(t)
+			if found {
+				fmt.Println("its a []byte")
+			}
 		case map[interface{}]interface{}:
 			decoded, err := DecodeMap(t)
 			if err != nil {
